@@ -5,7 +5,8 @@ const {validate} = require('./src/utiltys/validation')
 const Model = require('./src/models/schema.js')
 const bcrypt = require('bcrypt')
 const cookieparser = require('cookie-parser')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { user_auth } = require('./src/middleware/auth.js');
 
 const app = express();
 
@@ -47,51 +48,31 @@ try{
  const {email, Password} = req.body;
  const user = await Model.findOne({email : email});
  if(!user){
-  throw new Error("invalid Credintial")
+  throw new Error("invalid Credintjlksvial")
  }
-const valid_password = await bcrypt.compare(Password , user.Password)
+const valid_password = await user.validate_password(Password)
 if(valid_password){
 //creating a token
-const token = jwt.sign({_id : user._id}, "user_password")
-//cookie
+const token =  await user.get_jwt()
   res.cookie("token", token)
 
   res.send("login successfully")
 }
 else{
-  throw new Error("invalid credintial")
+  throw new Error("invalid cmd;lsadredintial")
 }
 }
 catch(err){
   res.status(400).send("Error" + err.message)
 }
 })
-app.get('/profile', async (req,res) => {
-   
-const cookie =   req.cookies
-const {token} = cookie
-const validate_token = await jwt.verify(token,'user_password')
-const {_id} = validate_token
-const find = await Model.findById(_id)
-
-
-res.send(find)
-
-
-})
-
-
-app.get('/user', async (req,res) => {
-
-  const find = req.body.Password
-  try{
-    const get_user = Model.find({Password : find})
-    res.send(get_user)
-  }
-  catch(err){
-    res.status(400).send('there is error fething your data')
-  }
+app.get("/profile" , user_auth, (req,res) => {
+  const user = req.user
+  res.send(user)
 } )
+
+
+
 
 
 
