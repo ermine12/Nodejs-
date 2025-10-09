@@ -1,5 +1,6 @@
 const Model = require("../models/schema")
 const jwt = require("jsonwebtoken")
+
 const user_auth = async (req,res,next) => {
  try{
      const cookie = req.cookies
